@@ -1,6 +1,6 @@
 const router = require("express").Router();
 
-router.get("/", async (req, res) => {
+router.get("/me", async (req, res) => {
     res.json({
         error : null,
         data : {

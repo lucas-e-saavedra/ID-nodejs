@@ -31,12 +31,46 @@ router.post('/login', async (req, res) => {
         email: user.email,
         id: user._id
     };
-    const minutesToExpire = process.env.TOKEN_EXPIRATION_MINUTES * 60;
-    const token = jwt.sign({
-        exp: Math.floor(Date.now() / 1000) + minutesToExpire,
+    const minutesToExpireAccess = process.env.ACCESSTOKEN_EXPIRATION_MINUTES * 60;
+    const accessToken = jwt.sign({
+        exp: Math.floor(Date.now() / 1000) + minutesToExpireAccess,
         data: payload
-    }, process.env.TOKEN_SECRET);
-    res.json({error: null, message: "Bienvenido", accessToken: token});
+    }, process.env.ACCESSTOKEN_SECRET);
+
+    const minutesToExpireRefresh = process.env.REFRESHTOKEN_EXPIRATION_MINUTES * 60;
+    const refreshToken = jwt.sign({
+        exp: Math.floor(Date.now() / 1000) + minutesToExpireRefresh,
+        data: payload
+    }, process.env.REFRESHTOKEN_SECRET);
+
+    res.json({
+        error: null, 
+        message: "Bienvenido", 
+        accessToken: accessToken, 
+        expiresIn: minutesToExpireAccess, 
+        refreshToken: refreshToken, 
+        refreshExpiresIn: minutesToExpireRefresh});
+});
+
+router.post('/refresh', async (req, res) => {
+    const refreshToken = req.body.refreshToken;
+    if (!refreshToken) {
+        return res.status(400).json({error : "Falta token de refresco"});
+    }
+    try {
+        const payload = jwt.verify(refreshToken, process.env.REFRESHTOKEN_SECRET);
+        const minutesToExpireAccess = process.env.ACCESSTOKEN_EXPIRATION_MINUTES * 60;
+        const accessToken = jwt.sign({
+            exp: Math.floor(Date.now() / 1000) + minutesToExpireAccess,
+            data: payload.data
+        }, process.env.ACCESSTOKEN_SECRET);
+        return res.json({
+            error: null, 
+            accessToken: accessToken, 
+            expiresIn: minutesToExpireAccess});
+    } catch (error) {
+        return res.status(400).json({ error : "Token de refresco invalido" });
+    }
 });
 
 

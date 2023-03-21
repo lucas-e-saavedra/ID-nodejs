@@ -15,18 +15,21 @@ const dbPassword = process.env.DBPASSWORD;
 const dbName = process.env.DBNAME;
 const uri = `mongodb+srv://${dbUser}:${dbPassword}@cluster0.wtf3otw.mongodb.net/${dbName}?retryWrites=true&w=majority`;
 
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+/*mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(()=> console.log('conectado a mongodb')) 
-  .catch(e => console.log('error de conexión', e));
+  .catch(e => console.log('error de conexión', e));*/
 
 
 // import routes
 const middleToken = require('./routes/validate-token');
 const authRoutes = require('./routes/auth');
+const webhookRoutes = require('./routes/webhook');
 const dashboardRoutes = require('./routes/dashboard');
 
 // route middlewares
 app.use('/api/user', authRoutes);
+
+app.use('/webhook', webhookRoutes);
 
 app.get('/me', middleToken, dashboardRoutes);
 
